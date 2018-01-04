@@ -1,0 +1,6 @@
+.*
+Dockerfile
+build.sh
+README.md
+build.sh
+*.old

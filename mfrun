@@ -7,30 +7,22 @@ if [[ "$HOST_IP_ADDRESS" == "" ]]; then
     exit 1
 fi
 
-#if [[ "$DATABASE_SERVER" == "" ]]; then
-#    echo Variable DATABASE_SERVER is undefined.
-#    exit 1
-#fi
-
-if [[ "$ETCD" == "" ]]; then
-    echo Variable ETCD is undefined.
-    exit 1
+if [[ -z $ZK && -z $ETCD ]]; then
+  echo 'you have to define a zookeeper ensemble or an etcd ensemble'
+  exit 1
 fi
 
-#if [[ "$REDIS" == "" ]]; then
-#    echo Variable REDIS is undefined.
-#    exit 1
-#fi
-
-#if [[ "$SECRET_KEY" == "" ]]; then
-#    echo Variable SECRET_KEY is undefined.
-#    exit 1
-#fi
-
-#if [[ "$JWT_SECRET_KEY" == "" ]]; then
-#    echo Variable JWT_SECRET_KEY is undefined.
-#    exit 1
-#fi
+if [ -z ${ZK+x} ]; then 
+  if [ -z ${ETCD+x} ]; then
+      echo "ETCD is unset";
+  else
+      echo "ETCD is set to '$ETCD'";
+      SERVICE_BACKEND="ETCD=$ETCD"
+  fi
+else
+    echo "ZK is set to '$ZK'"; 
+    SERVICE_BACKEND="ZK=$ZK"
+fi
 
 SERVICE=$1
 if [[ "$SERVICE" == "" ]]; then
@@ -51,37 +43,6 @@ if [[ "$1" == "--" ]]; then
     shift
 fi
 
-#DATABASE=
-#for SVC in $SERVICES_WITH_DB; do
-#    if [[ "$SERVICE" == "$SVC" ]]; then
-#        source ~/.mysql_passwords
-#        VAR=$(echo ${SERVICE}_DB_PASSWORD | tr '/a-z/' '/A-Z/')
-#        PASSWORD=$(eval echo \$$VAR)
-#        DATABASE="-e DATABASE_URL=mysql+pymysql://$SERVICE:$PASSWORD@$DATABASE_SERVER/$SERVICE"
-#
-#        source ~/.mysql_root_password
-#        MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -u root --protocol tcp <<EOF
-#CREATE DATABASE IF NOT EXISTS $SERVICE;
-#CREATE USER IF NOT EXISTS '$SERVICE'@'%' IDENTIFIED BY '$PASSWORD';
-#GRANT ALL PRIVILEGES ON $SERVICE.* TO '$DBNAME'@'%' IDENTIFIED BY '$PASSWORD';
-#FLUSH PRIVILEGES
-#EOF
-#    fi
-#done
-
-#if [[ "$SERVICE" == "ui" ]]; then
-#    SERVICE_URL="/"
-#    SOCKETIO=""
-#else
-#    if [[ "$SERVICE" == "socketio" ]]; then
-#        SERVICE_URL="/socket.io"
-#        SOCKETIO="-e LB_ALGORITHM=source"
-#    else
-#        SERVICE_URL="/api/$SERVICE"
-#        SOCKETIO=""
-#    fi
-#fi
-
 SERVICE_URL="/php"
 SOCKETIO=""
 LOAD_BALANCER=haproxy
@@ -89,16 +50,11 @@ LOAD_BALANCER=haproxy
 ID=$(docker run -d --restart always -P \
     -e PYTHONUNBUFFERED=1 \
     -e HOST_IP_ADDRESS=$HOST_IP_ADDRESS \
-    -e ETCD=$ETCD \
-    -e REDIS=$REDIS \
+    -e $SERVICE_BACKEND \
     -e LOAD_BALANCER=$LOAD_BALANCER \
     -e SERVICE_NAME=$SERVICE \
     -e SERVICE_URL=$SERVICE_URL \
     -e LB=http://$HOST_IP_ADDRESS \
-    -e SECRET_KEY=$SECRET_KEY \
-    -e JWT_SECRET_KEY=$JWT_SECRET_KEY \
-    $SOCKETIO \
-    $DATABASE \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -l app=microflack \
     -l service=$SERVICE \

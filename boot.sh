@@ -1,9 +1,9 @@
 #!/bin/sh -e
 
 # start service discovery task in the background
-#if [ "$SERVICE_URL" != "" ]; then
-#    python3 -c "from microflack_common.container import register; register()" &
-#fi
+if [ "$SERVICE_URL" != "" ]; then
+    python3 -c "from microflack_common.container import register; register()" &
+fi
 
 #!/bin/sh
 

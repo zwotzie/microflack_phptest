@@ -7,6 +7,11 @@ if [[ "$HOST_IP_ADDRESS" == "" ]]; then
     exit 1
 fi
 
+if [[ "$LB_HOST" == "" ]]; then
+    echo Variable LB_HOST is undefined.
+    exit 1
+fi
+
 if [[ -z $ZK && -z $ETCD ]]; then
   echo 'you have to define a zookeeper ensemble or an etcd ensemble'
   exit 1
@@ -55,6 +60,7 @@ ID=$(docker run -d --restart always -P \
     -e SERVICE_NAME=$SERVICE \
     -e SERVICE_URL=$SERVICE_URL \
     -e LB=http://$HOST_IP_ADDRESS \
+    -e LB_HOST=$LB_HOST \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -l app=microflack \
     -l service=$SERVICE \

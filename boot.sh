@@ -7,11 +7,11 @@ fi
 
 #!/bin/sh
 
-# Execute project specific setup script.
-if [ -e /app/setup.sh ]; then
-	echo "[i] Running project setup script."
-	. /app/setup.sh
-fi
+## Execute project specific setup script.
+#if [ -e /app/setup.sh ]; then
+#	echo "[i] Running project setup script."
+#	. /app/setup.sh
+#fi
 
 # Display PHP error's or not
 #if [[ "$ERRORS" != "1" ]] ; then

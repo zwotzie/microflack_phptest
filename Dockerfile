@@ -71,7 +71,7 @@ ENV LB_HOST $LB_HOST
 
 # copy app to container
 COPY . /
-RUN pip install --find-links /wheels -r /requirements.txt
+RUN pip install --find-links /wheels MicroFlack-Common==0.5
 
 WORKDIR /app
 EXPOSE 5000

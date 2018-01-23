@@ -12,7 +12,7 @@ fi
 
 # docker does not allow to import files from external directories, so we
 # temporarily copy our wheels here
-cp -R $WHEELHOUSE wheels
+rsync -rav --delete $WHEELHOUSE/ wheels/
 
 # build the image
 cmd="docker build --build-arg SERVICE_NAME=$SERVICE_NAME --build-arg SERVICE_VERSION=$SERVICE_VERSION -t $SERVICE ."

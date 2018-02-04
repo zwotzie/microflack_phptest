@@ -6,7 +6,8 @@
 <body>
 
 <?php
-echo "My first PHP script out of Docker!";
+echo "My first PHP script out of Docker!</br></br>";
+echo "Greetings from container/hostname: ".getenv('HOSTNAME');
 ?>
 
 </body>

@@ -1,6 +1,15 @@
 #!/bin/bash -e
-
 # This script starts a container for a microservice.
+# set -x
+
+SERVICE=$(basename $PWD)
+SERVICE_NAME=$(egrep -o "[^_]+$" <<<"$SERVICE")
+SERVICE_VERSION=$(git describe --tags)
+
+SERVICE_URL="/php"
+SOCKETIO=""
+LOAD_BALANCER=haproxy
+
 
 if [[ "$HOST_IP_ADDRESS" == "" ]]; then
     echo Variable HOST_IP_ADDRESS is undefined.
@@ -29,35 +38,12 @@ else
     SERVICE_BACKEND="ZK=$ZK"
 fi
 
-SERVICE=$1
-if [[ "$SERVICE" == "" ]]; then
-    echo "Usage: mfrun <service-name> [<image-tag>] [-- <custom-docker-run-args>]"
-    exit 1
-fi
-shift
-
-TAG=$1
-if [[ "$TAG" == "" ]] || [[ "$TAG" == "--" ]]; then
-    TAG=latest
-else
-    shift
-fi
-
-if [[ "$1" == "--" ]]; then
-    # leave only the extra arguments for docker
-    shift
-fi
-
-SERVICE_URL="/php"
-SOCKETIO=""
-LOAD_BALANCER=haproxy
-
 ID=$(docker run -d --restart always -P \
     -e PYTHONUNBUFFERED=1 \
     -e HOST_IP_ADDRESS=$HOST_IP_ADDRESS \
     -e $SERVICE_BACKEND \
     -e LOAD_BALANCER=$LOAD_BALANCER \
-    -e SERVICE_NAME=$SERVICE \
+    -e SERVICE_NAME=$SERVICE_NAME \
     -e SERVICE_URL=$SERVICE_URL \
     -e LB=http://$HOST_IP_ADDRESS \
     -e LB_HOST=$LB_HOST \
@@ -65,6 +51,6 @@ ID=$(docker run -d --restart always -P \
     -l app=microflack \
     -l service=$SERVICE \
     "$@" \
-    microflack_$SERVICE:$TAG)
-docker rename $ID ${SERVICE}_${ID:0:12}
+    $SERVICE:$SERVICE_VERSION)
+docker rename $ID ${SERVICE_NAME}_${ID:0:12}
 echo $ID

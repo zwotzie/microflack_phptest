@@ -7,6 +7,8 @@ SERVICE_NAME=$(egrep -o "[^_]+$" <<<"$SERVICE")
 SERVICE_VERSION=$(git describe --tags)
 
 SERVICE_URL="/php"
+BACKEND_URL=""
+
 SOCKETIO=""
 LOAD_BALANCER=haproxy
 
@@ -45,6 +47,7 @@ ID=$(docker run -d --restart always -P \
     -e LOAD_BALANCER=$LOAD_BALANCER \
     -e SERVICE_NAME=$SERVICE_NAME \
     -e SERVICE_URL=$SERVICE_URL \
+    -e BACKEND_URL=$BACKEND_URL \
     -e LB=http://$HOST_IP_ADDRESS \
     -e LB_HOST=$LB_HOST \
     -v /var/run/docker.sock:/var/run/docker.sock \
